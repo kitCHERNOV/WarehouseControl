@@ -8,3 +8,4 @@ DB_NAME=warehouse
 DB_SSLMODE=disable
 JWT_SECRET=your-secret-key-change-in-production
 JWT_EXPIRATION_HOURS=24
+CONFIG_PATH=configs/local.yaml
