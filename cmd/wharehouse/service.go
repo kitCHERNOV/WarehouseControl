@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"wbtechschool-L3/WarehouseControl/internal/config"
+	"wbtechschool-L3/WarehouseControl/internal/repository"
 )
 
 // Run initializes and starts the warehouse application
@@ -15,8 +16,15 @@ func Run(configPath string) error {
 	log.Printf("  Server Address: %s", cfg.HTTPServer.Address)
 	log.Printf("  Database: %s@%s:%d/%s", cfg.Database.User, cfg.Database.Host, cfg.Database.Port, cfg.Database.Name)
 
-	// TODO: Initialize database connection
-	// TODO: Initialize repository layer
+	// Initialize repository layer with database connection
+	repo, err := repository.New(cfg.Database)
+	if err != nil {
+		log.Fatalf("failed to initialize repository: %v", err)
+	}
+	defer repo.Close()
+
+	log.Println("Database connection established successfully")
+
 	// TODO: Initialize service layer
 	// TODO: Initialize handlers
 	// TODO: Setup router with middleware
