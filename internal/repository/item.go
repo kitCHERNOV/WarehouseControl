@@ -11,6 +11,8 @@ import (
 
 // CreateItem creates a new item in the database
 func (r *Repository) CreateItem(ctx context.Context, item *models.Item) error {
+	const op = "repository.item.CreateItem"
+
 	query := `
 		INSERT INTO items (name, quantity, created_at, updated_at)
 		VALUES ($1, $2, $3, $4)
@@ -23,7 +25,7 @@ func (r *Repository) CreateItem(ctx context.Context, item *models.Item) error {
 
 	err := r.db.QueryRowContext(ctx, query, item.Name, item.Quantity, now, now).Scan(&item.ID)
 	if err != nil {
-		return fmt.Errorf("failed to create item: %w", err)
+		return fmt.Errorf("failed to create item: Loc:%s, Err:%v", op, err)
 	}
 
 	return nil
@@ -31,6 +33,8 @@ func (r *Repository) CreateItem(ctx context.Context, item *models.Item) error {
 
 // GetItem retrieves an item by ID
 func (r *Repository) GetItem(ctx context.Context, id int) (*models.Item, error) {
+	const op = "repository.item.GetItem"
+
 	query := `
 		SELECT id, name, quantity, created_at, updated_at
 		FROM items
@@ -47,10 +51,10 @@ func (r *Repository) GetItem(ctx context.Context, id int) (*models.Item, error) 
 	)
 
 	if err == sql.ErrNoRows {
-		return nil, fmt.Errorf("item not found: %w", err)
+		return nil, fmt.Errorf("item not found: Loc:%s, Err:%v", op, err)
 	}
 	if err != nil {
-		return nil, fmt.Errorf("failed to get item: %w", err)
+		return nil, fmt.Errorf("failed to get item: Loc:%s, Err:%v", op, err)
 	}
 
 	return &item, nil
@@ -58,6 +62,8 @@ func (r *Repository) GetItem(ctx context.Context, id int) (*models.Item, error) 
 
 // GetAllItems retrieves all items from the database
 func (r *Repository) GetAllItems(ctx context.Context) ([]*models.Item, error) {
+	const op = "repository.item.GetAllItems"
+
 	query := `
 		SELECT id, name, quantity, created_at, updated_at
 		FROM items
@@ -66,7 +72,7 @@ func (r *Repository) GetAllItems(ctx context.Context) ([]*models.Item, error) {
 
 	rows, err := r.db.QueryContext(ctx, query)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get items: %w", err)
+		return nil, fmt.Errorf("failed to get items: Loc:%s, Err:%v", op, err)
 	}
 	defer rows.Close()
 
@@ -80,13 +86,13 @@ func (r *Repository) GetAllItems(ctx context.Context) ([]*models.Item, error) {
 			&item.CreatedAt,
 			&item.UpdatedAt,
 		); err != nil {
-			return nil, fmt.Errorf("failed to scan item: %w", err)
+			return nil, fmt.Errorf("failed to scan item: Loc:%s, Err:%v", op, err)
 		}
 		items = append(items, &item)
 	}
 
 	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("error iterating items: %w", err)
+		return nil, fmt.Errorf("error iterating items: Loc:%s, Err:%v", op, err)
 	}
 
 	return items, nil
@@ -94,6 +100,8 @@ func (r *Repository) GetAllItems(ctx context.Context) ([]*models.Item, error) {
 
 // UpdateItem updates an existing item
 func (r *Repository) UpdateItem(ctx context.Context, item *models.Item) error {
+	const op = "repository.item.UpdateItem"
+
 	query := `
 		UPDATE items
 		SET name = $1, quantity = $2, updated_at = $3
@@ -104,12 +112,12 @@ func (r *Repository) UpdateItem(ctx context.Context, item *models.Item) error {
 
 	result, err := r.db.ExecContext(ctx, query, item.Name, item.Quantity, item.UpdatedAt, item.ID)
 	if err != nil {
-		return fmt.Errorf("failed to update item: %w", err)
+		return fmt.Errorf("failed to update item: Loc:%s, Err:%v", op, err)
 	}
 
 	rowsAffected, err := result.RowsAffected()
 	if err != nil {
-		return fmt.Errorf("failed to get rows affected: %w", err)
+		return fmt.Errorf("failed to get rows affected: Loc:%s, Err:%v", op, err)
 	}
 
 	if rowsAffected == 0 {
@@ -121,16 +129,18 @@ func (r *Repository) UpdateItem(ctx context.Context, item *models.Item) error {
 
 // DeleteItem deletes an item by ID
 func (r *Repository) DeleteItem(ctx context.Context, id int) error {
+	const op = "repository.item.DeleteItem"
+
 	query := `DELETE FROM items WHERE id = $1`
 
 	result, err := r.db.ExecContext(ctx, query, id)
 	if err != nil {
-		return fmt.Errorf("failed to delete item: %w", err)
+		return fmt.Errorf("failed to delete item: Loc:%s, Err:%v", op, err)
 	}
 
 	rowsAffected, err := result.RowsAffected()
 	if err != nil {
-		return fmt.Errorf("failed to get rows affected: %w", err)
+		return fmt.Errorf("failed to get rows affected: Loc:%s, Err:%v", op, err)
 	}
 
 	if rowsAffected == 0 {
