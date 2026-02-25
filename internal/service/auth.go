@@ -29,10 +29,12 @@ func NewAuthService(repo *repository.Repository, jwtCfg config.JWT) *AuthService
 
 // Login authenticates a user and returns a JWT token
 func (s *AuthService) Login(ctx context.Context, req *models.LoginRequest) (*models.LoginResponse, error) {
+	const op = "service.auth.Login"
+
 	// Get user from repository
 	user, err := s.repo.GetUserByUsername(ctx, req.Username)
 	if err != nil {
-		return nil, fmt.Errorf("invalid credentials: %w", err)
+		return nil, fmt.Errorf("invalid credentials: Loc:%s, Err:%v", op, err)
 	}
 
 	// Check password (in production, use bcrypt)
@@ -43,7 +45,7 @@ func (s *AuthService) Login(ctx context.Context, req *models.LoginRequest) (*mod
 	// Generate JWT token
 	token, err := s.generateToken(user)
 	if err != nil {
-		return nil, fmt.Errorf("failed to generate token: %w", err)
+		return nil, fmt.Errorf("failed to generate token: Loc:%s, Err:%v", op, err)
 	}
 
 	// Remove password from response
@@ -57,6 +59,8 @@ func (s *AuthService) Login(ctx context.Context, req *models.LoginRequest) (*mod
 
 // generateToken generates a JWT token for a user
 func (s *AuthService) generateToken(user *models.User) (string, error) {
+	const op = "service.auth.generateToken"
+
 	claims := jwt.MapClaims{
 		"user_id":  user.ID,
 		"username": user.Username,
@@ -67,7 +71,7 @@ func (s *AuthService) generateToken(user *models.User) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	tokenString, err := token.SignedString([]byte(s.jwtCfg.Secret))
 	if err != nil {
-		return "", fmt.Errorf("failed to sign token: %w", err)
+		return "", fmt.Errorf("failed to sign token: Loc:%s, Err:%v", op, err)
 	}
 
 	return tokenString, nil
@@ -75,6 +79,8 @@ func (s *AuthService) generateToken(user *models.User) (string, error) {
 
 // ValidateToken validates a JWT token and returns the claims
 func (s *AuthService) ValidateToken(tokenString string) (*models.Claims, error) {
+	const op = "service.auth.ValidateToken"
+
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
@@ -83,7 +89,7 @@ func (s *AuthService) ValidateToken(tokenString string) (*models.Claims, error) 
 	})
 
 	if err != nil {
-		return nil, fmt.Errorf("failed to parse token: %w", err)
+		return nil, fmt.Errorf("failed to parse token: Loc:%s, Err:%v", op, err)
 	}
 
 	if !token.Valid {

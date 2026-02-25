@@ -20,9 +20,11 @@ func NewHistoryService(repo *repository.Repository) *HistoryService {
 
 // GetHistoryByItemID retrieves the history of changes for a specific item
 func (s *HistoryService) GetHistoryByItemID(ctx context.Context, itemID int) ([]*models.History, error) {
+	const op = "service.history.GetHistoryByItemID"
+
 	history, err := s.repo.GetHistoryByItemID(ctx, itemID)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get history: %w", err)
+		return nil, fmt.Errorf("failed to get history: Loc:%s, Err:%v", op, err)
 	}
 
 	return history, nil
@@ -30,9 +32,11 @@ func (s *HistoryService) GetHistoryByItemID(ctx context.Context, itemID int) ([]
 
 // GetAllHistory retrieves all history records
 func (s *HistoryService) GetAllHistory(ctx context.Context) ([]*models.History, error) {
+	const op = "service.history.GetAllHistory"
+
 	history, err := s.repo.GetAllHistory(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get history: %w", err)
+		return nil, fmt.Errorf("failed to get history: Loc:%s, Err:%v", op, err)
 	}
 
 	return history, nil
