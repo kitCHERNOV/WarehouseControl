@@ -29,13 +29,19 @@ func (s *ItemService) CreateItem(ctx context.Context, req *models.CreateItemRequ
 	if req.Quantity < 0 {
 		return nil, fmt.Errorf("quantity cannot be negative")
 	}
-
-	item := &models.Item{
-		Name:     req.Name,
-		Quantity: req.Quantity,
+	if req.Price < 0 {
+		return nil, fmt.Errorf("price cannot be negative")
 	}
 
-	if err := s.repo.CreateItem(ctx, item); err != nil {
+	item := &models.Item{
+		Name:        req.Name,
+		Description: req.Description,
+		Quantity:    req.Quantity,
+		Price:       req.Price,
+		SKU:         req.SKU,
+	}
+
+	if err := s.repo.CreateItem(ctx, item, userID, userName); err != nil {
 		return nil, fmt.Errorf("failed to create item: Loc:%s, Err:%v", op, err)
 	}
 
@@ -77,6 +83,9 @@ func (s *ItemService) UpdateItem(ctx context.Context, id int, req *models.Update
 	if req.Quantity < 0 {
 		return nil, fmt.Errorf("quantity cannot be negative")
 	}
+	if req.Price < 0 {
+		return nil, fmt.Errorf("price cannot be negative")
+	}
 
 	// Check if item exists
 	_, err := s.repo.GetItem(ctx, id)
@@ -86,12 +95,15 @@ func (s *ItemService) UpdateItem(ctx context.Context, id int, req *models.Update
 
 	// Update item
 	item := &models.Item{
-		ID:       id,
-		Name:     req.Name,
-		Quantity: req.Quantity,
+		ID:          id,
+		Name:        req.Name,
+		Description: req.Description,
+		Quantity:    req.Quantity,
+		Price:       req.Price,
+		SKU:         req.SKU,
 	}
 
-	if err := s.repo.UpdateItem(ctx, item); err != nil {
+	if err := s.repo.UpdateItem(ctx, item, userID, userName); err != nil {
 		return nil, fmt.Errorf("failed to update item: Loc:%s, Err:%v", op, err)
 	}
 
@@ -108,7 +120,7 @@ func (s *ItemService) DeleteItem(ctx context.Context, id int, userID, userName s
 		return fmt.Errorf("failed to get item: Loc:%s, Err:%v", op, err)
 	}
 
-	if err := s.repo.DeleteItem(ctx, id); err != nil {
+	if err := s.repo.DeleteItem(ctx, id, userID, userName); err != nil {
 		return fmt.Errorf("failed to delete item: Loc:%s, Err:%v", op, err)
 	}
 
